@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MySql.Data" Version="8.0.31" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SteamAuth-master\SteamAuth\SteamAuth.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="SteamAuth">
+      <HintPath>..\SteamAuth-master\SteamAuth\bin\Debug\SteamAuth.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

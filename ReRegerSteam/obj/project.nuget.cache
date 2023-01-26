@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "OIYHsTRH7XYbjdQt9BdVEgFgcZAz3SvwynixsNIlCBeRKcuOIhDqpsK+t6SeToTYKtBrZoNQn2yoaB0Sz7qmtw==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\gvozd\\source\\repos\\Reger\\ReRegerSteam\\ReRegerSteam.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\gvozd\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
+    "C:\\Users\\gvozd\\.nuget\\packages\\selenium.support\\4.6.0\\selenium.support.4.6.0.nupkg.sha512",
+    "C:\\Users\\gvozd\\.nuget\\packages\\selenium.webdriver\\4.6.0\\selenium.webdriver.4.6.0.nupkg.sha512"
+  ],
+  "logs": []
+}

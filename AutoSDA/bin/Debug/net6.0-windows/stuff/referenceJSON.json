@@ -1,0 +1,10 @@
+{
+  "AutoSteamSaleEvent": true,
+  "Enabled": true,
+  "SteamLogin": "{login}",
+  "SteamPassword": "{password}",
+  "SteamTradeToken": "vjg7y_7b",
+  "SteamUserPermissions": {
+    "76561199388554480": 3
+  }
+}
