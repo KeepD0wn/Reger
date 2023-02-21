@@ -161,11 +161,11 @@ namespace ReRegerSteam
 
         static string GetCodeMailRu(string windowMail, int letterNum, string url = null)
         {
-            Thread.Sleep(20000);
+            Thread.Sleep(15000);
             browser.SwitchTo().Window(windowMail);
             Thread.Sleep(1000);
             browser.Navigate().GoToUrl("https://e.mail.ru/inbox/");
-            Thread.Sleep(5000);
+            Thread.Sleep(4000);
 
             try
             {
@@ -174,6 +174,15 @@ namespace ReRegerSteam
                 {
                     browser.FindElement(By.XPath($"//*[@id=\"app-canvas\"]/div/div[1]/div[1]/div/div[2]/span/div[2]/div/div/div/div/div[2]/div/div/div/div[1]/div/div/a[{letterNum}]/div[4]/div/div[1]/span"));
                     divNum = 2;
+                }
+                catch
+                {
+
+                }
+
+                try
+                {
+                    browser.FindElement(By.XPath("/html/body/div[17]/div[2]/div/div/div/div[1]/svg")).Click();                    
                 }
                 catch
                 {
@@ -216,11 +225,11 @@ namespace ReRegerSteam
 
         static string GetCodeChina(string windowChinaMail, int letterNum, string url)
         {
-            Thread.Sleep(20000);
+            Thread.Sleep(15000);
             browser.SwitchTo().Window(windowChinaMail);
             Thread.Sleep(1000);
             browser.Navigate().GoToUrl($"{url}?_task=mail&_mbox=INBOX");
-            Thread.Sleep(2000);
+            Thread.Sleep(4000);
 
             try
             {
@@ -276,11 +285,11 @@ namespace ReRegerSteam
             {
                 browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[1]/div/div/div/div/div/div[1]/div/input")).SendKeys(login);
                 Thread.Sleep(1000);
-                browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[3]/div/div/div[1]/div/button/span")).Click();
-                Thread.Sleep(1000);
+                browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[3]/div/div/div[1]/button/span")).Click();
+                Thread.Sleep(2000);
                 browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[2]/div/div/div/div/div/input")).SendKeys(password);
                 Thread.Sleep(1000);
-                browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[3]/div/div/div[1]/div/div/button/span")).Click();
+                browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[3]/div/div/div[1]/div/button/span")).Click();
                 Thread.Sleep(1000);
             }
             catch
@@ -430,6 +439,7 @@ namespace ReRegerSteam
             Thread.Sleep(1000);
             browser.Navigate().GoToUrl("https://store.steampowered.com/login/?redir=&redir_ssl=1&snr=1_4_660__global-header");
             Thread.Sleep(2000);
+            AcceptAllCookie();
 
             string codeActualMail = null;
 
@@ -444,7 +454,7 @@ namespace ReRegerSteam
                 //клик по кнопке входа
                 IWebElement btnSend = browser.FindElement(By.XPath("//*[@id=\"responsive_page_template_content\"]/div/div[1]/div/div/div/div[2]/div/form/div[4]/button"));
                 btnSend.Click();
-                Thread.Sleep(3000);
+                Thread.Sleep(7000);
 
                 bool needMailConfirm = true;
                 try
@@ -556,6 +566,7 @@ namespace ReRegerSteam
             { 
                 //очитска истории ников 
                 Thread.Sleep(2000);
+                AcceptAllCookie();
                 browser.FindElement(By.XPath("//*[@id=\"getnamehistory_arrow\"]")).Click();
             }
             catch //либо ошибка отсутствия хпаса либо акк совсем не настроенный и надо нажать кнопку первичной настройки
@@ -582,8 +593,10 @@ namespace ReRegerSteam
             Thread.Sleep(1000);
             try
             {
+                AcceptAllCookie();
                 browser.FindElement(By.XPath("//*[@id=\"NamePopupClearAliases\"]/a")).Click();
                 Thread.Sleep(2000);
+                AcceptAllCookie();
                 browser.FindElement(By.XPath("/html/body/div[3]/div[3]/div/div[2]/div[1]/span")).Click();
             }
             catch (ElementNotInteractableException ex)
@@ -634,7 +647,7 @@ namespace ReRegerSteam
                 num = (num + num) - 1;
 
                 browser.FindElement(By.XPath($"//*[@id=\"application_root\"]/div[3]/div[2]/div/div[1]/div[4]/div[2]/div/div[{num}]/img")).Click();
-                Thread.Sleep(1000);
+                Thread.Sleep(2000);
                 browser.FindElement(By.XPath("//*[@id=\"application_root\"]/div[3]/div[2]/div/div[2]/button[1]")).Click();
 
                 Thread.Sleep(1000);
@@ -709,6 +722,45 @@ namespace ReRegerSteam
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Change steam mail exceprion");
+                Console.ResetColor();
+                Console.ReadLine();
+            }
+
+        }
+
+        static void CheckPrime(string windowSteam)
+        {
+            Thread.Sleep(1000);
+            browser.SwitchTo().Window(windowSteam);
+            Thread.Sleep(1000);
+
+            browser.Navigate().GoToUrl("https://store.steampowered.com/app/730/CounterStrike_Global_Offensive/");
+            Thread.Sleep(4000);
+            AcceptAllCookie();
+
+            try
+            {
+                //тут может быть плашка увидеть контент 18+. Жать да если она есть, если нет забить
+            }
+            catch { }
+
+            try
+            {
+                browser.FindElement(By.XPath("//*[@id=\"btn_add_to_cart_54029\"]/span")).Click();
+                Thread.Sleep(4000);                
+                //кнопка клика ниже есть только уже у праймов, у нонпраймов другой хпас
+                browser.FindElement(By.XPath("//*[@id=\"responsive_page_template_content\"]/div[1]/div[2]/div[4]/div[1]/div[3]/div[3]/div/span")).Click();
+            }
+            catch (OpenQA.Selenium.ElementClickInterceptedException)
+            {
+                //кнопка существует, но нельзя кликнуть, тк уже куплен прайм
+            }
+            //если кнопка купить для себя есть, значит no such element
+            catch(Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("No Prime Status");
+                Console.WriteLine(ex.Message);
                 Console.ResetColor();
                 Console.ReadLine();
             }
@@ -853,9 +905,15 @@ namespace ReRegerSteam
                         browser.Navigate().GoToUrl(urlOldMail);
                         string windowOldMail = browser.WindowHandles.Last();
 
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"Steam login is {loginSteam}");
+                        Console.ResetColor();
+
                         LoginMailRu(loginNewMail, passwordNewMail, windowNewMail);
                         LoginChiniseMail(loginOldMail, passwordOldMail, windowOldMail);
                         LoginSteam(loginSteam, passwordSteam, windowSteam, windowOldMail, getCodeOldMail, urlOldMail);
+
+                        CheckPrime(windowSteam);
 
                         ClearFriends(windowSteam);
                         SteamProfileRedact(GetNickName(), windowSteam);
@@ -866,10 +924,6 @@ namespace ReRegerSteam
                         LoginSteam(loginSteam, passwordNewMail, windowSteam, windowNewMail, getCodeNewMail);
 
                         Thread.Sleep(1000);
-                        ((IJavaScriptExecutor)browser).ExecuteScript("window.open();");
-                        browser.SwitchTo().Window(browser.WindowHandles.Last());
-                        browser.Navigate().GoToUrl("https://i1.sndcdn.com/artworks-000171976982-p10wbc-t500x500.jpg");
-                        Thread.Sleep(2000);
                         browser.Quit();
                         Thread.Sleep(2000);
                     }

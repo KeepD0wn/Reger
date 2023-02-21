@@ -8,4 +8,5 @@
         public Rostelecom rostelecom { get; set; }
         public Tele2 tele2 { get; set; }
         public Yota yota { get; set; }
-    }
+        public Virtual15 virtual15 { get; set; }
+}

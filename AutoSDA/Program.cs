@@ -30,6 +30,7 @@ using System.Net.Http;
 using TwoCaptcha.Captcha;
 using static System.Windows.Forms.DataFormats;
 using System.Security.Cryptography;
+using AutoSDA.Deserialize_Classes;
 
 namespace AutoSDA
 {
@@ -97,11 +98,11 @@ namespace AutoSDA
             {
                 browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[1]/div/div/div/div/div/div[1]/div/input")).SendKeys(login);
                 Thread.Sleep(1000);
-                browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[3]/div/div/div[1]/div/button/span")).Click();
-                Thread.Sleep(3000);
+                browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[3]/div/div/div[1]/button/span")).Click();
+                Thread.Sleep(2000);
                 browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[2]/div/div/div/div/div/input")).SendKeys(password);
                 Thread.Sleep(1000);
-                browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[3]/div/div/div[1]/div/div/button/span")).Click();
+                browser.FindElement(By.XPath("//*[@id=\"root\"]/div[2]/div/div/div/div/div/form/div[2]/div/div[3]/div/div/div[1]/div/button/span")).Click();
                 Thread.Sleep(1000);
             }
             catch(Exception ex)
@@ -116,11 +117,11 @@ namespace AutoSDA
 
         static string GetCodeMailRu(string windowMail, int letterNum, IWebDriver browser, string url = null)
         {
-            Thread.Sleep(20000);
+            Thread.Sleep(15000);
             browser.SwitchTo().Window(windowMail);
             Thread.Sleep(1000);
             browser.Navigate().GoToUrl("https://e.mail.ru/inbox/");
-            Thread.Sleep(5000);
+            Thread.Sleep(4000);
 
             try
             {
@@ -172,7 +173,7 @@ namespace AutoSDA
 
         static void ConfirmMobileMail(string windowMail, int letterNum, IWebDriver browser, string url = null)
         {
-            Thread.Sleep(20000);
+            Thread.Sleep(15000);
             browser.SwitchTo().Window(windowMail);
             Thread.Sleep(1000);
             browser.Navigate().GoToUrl("https://e.mail.ru/inbox/");
@@ -337,7 +338,7 @@ namespace AutoSDA
                         Thread.Sleep(500);
                     }
                     PostMessage(windowSDA, WM_KEYDOWN, VK_ENTER, 1);
-                    Thread.Sleep(3000);
+                    Thread.Sleep(7000);
                 }
                 else
                 {
@@ -574,7 +575,7 @@ namespace AutoSDA
             }       
         }
 
-        static async Task<string> SaveRCodeWindow(string currentDirectory, double screenScalingFactor, int imageCount)
+        static async Task<string> SaveRCodeFilteredWindow(string currentDirectory, double screenScalingFactor, int imageCount)
         {
             try
             {
@@ -603,6 +604,15 @@ namespace AutoSDA
 
 
                     string rCode = await Captcha(imageCount);
+                    Console.WriteLine(rCode);
+                    rCode = rCode.ToUpper();
+                    if (rCode[0] != 'R')
+                    {
+                        rCode = "R" + rCode;
+                    }
+                    rCode = rCode.Replace("o", "0");
+                    rCode = rCode.Replace("O", "0");
+                    Console.WriteLine(rCode);
                     //var ocrengine = new TesseractEngine(@$"{currentDirectory}\tessdata", "eng", EngineMode.Default);
                     //var img = Pix.LoadFromFile(@$"{currentDirectory}\stuff\RCodeHightQual.png");
                     //var res = ocrengine.Process(img);
@@ -760,6 +770,11 @@ namespace AutoSDA
                     countProvider = providers.russia.steam.mts.count;
                     costProvider = providers.russia.steam.mts.cost;
                 }
+                else if (provider == "virtual15")
+                {
+                    countProvider = providers.russia.steam.virtual15.count;
+                    costProvider = providers.russia.steam.virtual15.cost;
+                }
 
                 if (balance < costProvider)
                 {
@@ -791,7 +806,7 @@ namespace AutoSDA
         {
             try
             {
-                string buyResult = GetRequest($"https://5sim.net/v1/user/buy/activation/russia/{provider}/steam");
+                string buyResult = GetRequest($"https://5sim.net/v1/user/buy/activation/russia/{provider}/steam"); //TODO no free phones бывает ответ и ошибка вылезает
                 RootPhone phone = JsonConvert.DeserializeObject<RootPhone>(buyResult);
 
                 phoneNumber = phone.phone;
@@ -806,24 +821,82 @@ namespace AutoSDA
                 Console.ReadLine();
             }
         }
+
+        static void OrderPhoneOnlineSim(ref string phoneNumber, ref int phoneId, string provider)
+        {
+            try
+            {                
+                string buyResult = GetRequest($"https://onlinesim.ru/api/getNum.php?PARAMETERS&apikey=FFTsQxu2J14afLT-K2xN7H1b-wHr55zRR-q59tdKvF-6xy98m9LYSFevT3&lang=ru&service=steam&number=true"); //TODO no free phones бывает ответ и ошибка вылезает
+                OnlimeSimNumber phone = JsonConvert.DeserializeObject<OnlimeSimNumber>(buyResult);
+
+                phoneNumber = phone.number;
+                phoneId = phone.tzid;
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Exception in [OrederPhone] method");
+                Console.WriteLine(ex.Message);
+                Console.ResetColor();
+                Console.ReadLine();
+            }
+        }
+
         static string CheckSms(int phoneId)
         {
             try
             {
-                DateTime now = DateTime.Now;
-                while (now < DateTime.Now.AddSeconds(60))
+                bool isCodeCame = false;
+
+                DateTime end = DateTime.Now.AddSeconds(40);
+                while (DateTime.Now < end)
                 {
                     Console.WriteLine("Waiting sms code");
                     string smsResult = GetRequest($"https://5sim.net/v1/user/check/{phoneId}");
                     RootSms smsRoot = JsonConvert.DeserializeObject<RootSms>(smsResult);
                     if (smsRoot.sms != null && smsRoot.sms.Any())
                     {
+                        isCodeCame = true;
                         return smsRoot.sms.Last<Sms>().code;
                     }
                     Thread.Sleep(5000);
                 }
+
             }
             catch(Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Exception in [CheckSms] method");
+                Console.WriteLine(ex.Message);
+                Console.ResetColor();
+                Console.ReadLine();
+            }
+            return null;
+        }
+
+        static string ReturnSmsOnlineSim(int phoneId)
+        {
+            try
+            {
+                bool isCodeCame = false;
+
+                DateTime end = DateTime.Now.AddSeconds(40);
+                while (DateTime.Now < end)
+                {
+                    Console.WriteLine("Waiting sms code");
+                    string smsResult = GetRequest($"https://onlinesim.ru/api/getState.php?PARAMETERS&apikey=FFTsQxu2J14afLT-K2xN7H1b-wHr55zRR-q59tdKvF-6xy98m9LYSFevT3&tzid={phoneId}");
+                    smsResult = smsResult.Substring(1, smsResult.Length - 2);                    
+                    TzIDOnlineSim smsRoot = JsonConvert.DeserializeObject<TzIDOnlineSim>(smsResult);
+                    if (smsRoot.msg != null)
+                    {
+                        isCodeCame = true;                       
+                        return smsRoot.msg;
+                    }
+                    Thread.Sleep(5000);
+                }
+
+            }
+            catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Exception in [CheckSms] method");
@@ -1153,11 +1226,12 @@ namespace AutoSDA
             captcha.SetFile(@$"{Directory.GetCurrentDirectory()}\stuff\RCodeHightQual{imageCount}.png");
             captcha.SetNumeric(4);
             captcha.SetMinLen(6);
-            captcha.SetMaxLen(7);
+            captcha.SetMaxLen(6);
             captcha.SetPhrase(false);
             captcha.SetCaseSensitive(true);
             captcha.SetCalc(false);
             captcha.SetLang("en");
+            captcha.SetHintText("Letter R and five numbers");
 
             try
             {
@@ -1204,7 +1278,11 @@ namespace AutoSDA
                     int countProviderPhones = default;
                     double costProvider = default;
 
-                    CheckSteamNumberAvailable(ref balance, ref countProviderPhones, ref costProvider, providerName);
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Steam login is {loginSteam}");
+                    Console.ResetColor();
+
+                   //CheckSteamNumberAvailable(ref balance, ref countProviderPhones, ref costProvider, providerName);
 
                     Process process = new Process();
                     ProcessStartInfo processStartInfo = new ProcessStartInfo();
@@ -1238,7 +1316,8 @@ namespace AutoSDA
                         EnterMailCodeSDA(windowMail, browser);
                     }                    
 
-                    OrderPhone(ref phoneNumber, ref phoneOrderId, providerName);
+                    //OrderPhone(ref phoneNumber, ref phoneOrderId, providerName);
+                    OrderPhoneOnlineSim(ref phoneNumber, ref phoneOrderId, providerName);
 
                     EnterPhoneSDA(phoneNumber);
 
@@ -1251,7 +1330,7 @@ namespace AutoSDA
 
                     SkipWarningWindow();
 
-                    string rCode = SaveRCodeWindow(currentDirectory, screenScalingFactor,  imageCount).Result;
+                    string rCode = SaveRCodeFilteredWindow(currentDirectory, screenScalingFactor,  imageCount).Result;
                     if (rCode == null)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -1260,7 +1339,8 @@ namespace AutoSDA
                         Console.ReadLine();
                     }
 
-                    string smsCode = CheckSms(phoneOrderId);
+                    string smsCode = ReturnSmsOnlineSim(phoneOrderId);
+                    //string smsCode = CheckSms(phoneOrderId);
                     if (smsCode == null)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
