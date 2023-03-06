@@ -9,7 +9,7 @@ namespace AutoSDA.Deserialize_Classes
     internal class TzIDOnlineSim
     {
         public int country { get; set; }
-        public int sum { get; set; }
+        public double sum { get; set; }
         public string service { get; set; }
         public string number { get; set; }
         public string response { get; set; }

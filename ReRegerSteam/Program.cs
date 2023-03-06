@@ -169,6 +169,16 @@ namespace ReRegerSteam
 
             try
             {
+                try
+                {
+                    //окно с добавлением резервной почты закрываем если вылезло
+                    browser.FindElement(By.XPath($"/html/body/div[17]/div[2]/div/div/div/div[1]/svg/path")).Click();
+                }
+                catch
+                {                    
+                }
+                
+
                 int divNum = 1; //иногда на почтах есть разделение писем на сегодня завтра, а иногда нет, для этого доп дип юзается и 1 меняется на 2
                 try
                 {
@@ -238,7 +248,19 @@ namespace ReRegerSteam
                     string className = browser.FindElement(By.XPath($"/html/body/div[1]/div[3]/div[4]/table[2]/tbody/tr[{letterNum}]")).GetAttribute("class");
                     if (className.Contains("unread"))
                     {
-                        string hrefMessage = browser.FindElement(By.XPath($"/html/body/div[1]/div[3]/div[4]/table[2]/tbody/tr[{letterNum}]/td[2]/span[3]/a")).GetAttribute("href");
+                        string hrefMessage = null;
+                        try
+                        {
+                            if(hrefMessage == null)
+                            hrefMessage = browser.FindElement(By.XPath($"/html/body/div[1]/div[3]/div[4]/table[2]/tbody/tr[{letterNum}]/td[2]/span[3]/a")).GetAttribute("href");
+                        }
+                        catch { }
+                        try
+                        {
+                            if (hrefMessage == null)
+                            hrefMessage = browser.FindElement(By.XPath($"/html/body/div[1]/div[3]/div[4]/table[2]/tbody/tr[{letterNum}]/td[2]/span[4]/a")).GetAttribute("href");
+                        }
+                        catch { }
                         Thread.Sleep(1000);
                         string lastWindow = browser.WindowHandles.Last();
                         ((IJavaScriptExecutor)browser).ExecuteScript("window.open();");
@@ -248,7 +270,7 @@ namespace ReRegerSteam
                         string result = null;
                         // либо ошибка в хпасе для получения кода либо последнее сообщение не с кодом
                         try
-                        {
+                        {                                           
                             result = browser.FindElement(By.XPath("//*[@id=\"message-htmlpart1\"]/div/center[1]/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr[1]/td/table/tbody/tr[2]/td/table[3]/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td")).Text;
                         }
                         catch
@@ -454,7 +476,7 @@ namespace ReRegerSteam
                 //клик по кнопке входа
                 IWebElement btnSend = browser.FindElement(By.XPath("//*[@id=\"responsive_page_template_content\"]/div/div[1]/div/div/div/div[2]/div/form/div[4]/button"));
                 btnSend.Click();
-                Thread.Sleep(7000);
+                Thread.Sleep(10000);
 
                 bool needMailConfirm = true;
                 try
@@ -481,7 +503,7 @@ namespace ReRegerSteam
 
                 Thread.Sleep(1000);
                 browser.SwitchTo().Window(windowSteam);
-                Thread.Sleep(2000);
+                Thread.Sleep(5000);
             }
             catch
             {

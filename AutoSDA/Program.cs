@@ -31,6 +31,9 @@ using TwoCaptcha.Captcha;
 using static System.Windows.Forms.DataFormats;
 using System.Security.Cryptography;
 using AutoSDA.Deserialize_Classes;
+using System.Configuration.Provider;
+using OpenQA.Selenium.Interactions;
+using System.Xml.Linq;
 
 namespace AutoSDA
 {
@@ -201,7 +204,10 @@ namespace AutoSDA
                     // либо ошибка в хпасе для получения кода либо последнее сообщение не с кодом
                     try
                     {
-                        browser.FindElement(By.XPath("//a[contains(@class,'link_mr_css_attr')][contains(@class,'c-grey4_mr_css_attr')]")).Click();
+                        // на 1080 элемент почты перекрывает клик кнопки подтверждения номера. Поэтому через js
+                        IJavaScriptExecutor js = (IJavaScriptExecutor)browser;
+                        js.ExecuteScript("arguments[0].click()", browser.FindElement(By.XPath("//a[contains(@class,'link_mr_css_attr')][contains(@class,'c-grey4_mr_css_attr')]")));
+                                             
                         Thread.Sleep(10000);
                         browser.SwitchTo().Window(browser.WindowHandles.Last());
                         try
@@ -694,7 +700,7 @@ namespace AutoSDA
                 if (reEnterRCodeWindow.ToString() != "0" && !listWindowsSDA.Contains(reEnterRCodeWindow.ToString()))
                 {
                     TypeText(reEnterRCodeWindow, rCode);
-                    Thread.Sleep(5000);
+                    Thread.Sleep(10000);
                 }
                 else
                 {
@@ -1219,6 +1225,72 @@ namespace AutoSDA
 
         static List<string> listWindowsSDA = new List<string>();
 
+        static void TryAgainAfterNoSms(string currentDirectory, string loginSteam, string loginMailRu, string password, Process sdaProc, int sdaProcId, double screenScalingFactor, int imageCount, string phoneNumber, int phoneOrderId,string providerName)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Steam login is {loginSteam}");
+            Console.ResetColor();
+
+            //CheckSteamNumberAvailable(ref balance, ref countProviderPhones, ref costProvider, providerName);
+
+            Process process = new Process();
+            ProcessStartInfo processStartInfo = new ProcessStartInfo();
+            processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            processStartInfo.FileName = "cmd.exe";
+            processStartInfo.Arguments = string.Format("/C \"{0}\" ", new object[]
+            {
+                       @$"{currentDirectory}\SDA\Steam Desktop Authenticator.exe",
+            });
+            process.StartInfo = processStartInfo;
+            process.Start();
+            Thread.Sleep(3000);
+
+            IWebDriver browser = new ChromeDriver(@"C:\Users\gvozd\Desktop"); //2 параметр options если расширение
+            browser.Navigate().GoToUrl("https://auth.mail.ru/cgi-bin/auth?from=portal");
+            Thread.Sleep(500);
+            string windowMail = browser.WindowHandles.Last();
+            Thread.Sleep(500);
+
+            LoginMailRu(loginMailRu, password, windowMail, browser);
+
+            StartSDA(ref sdaProc, ref sdaProcId);
+
+            LoginSDA(loginSteam, password);
+
+            bool isCodeNeeded = MailCodeNeeded(currentDirectory, screenScalingFactor, imageCount);
+
+            if (isCodeNeeded == true)
+            {
+                //иногда не нужен, есть акки которые пускают без кода
+                EnterMailCodeSDA(windowMail, browser);
+            }
+
+            //OrderPhone(ref phoneNumber, ref phoneOrderId, providerName);
+            OrderPhoneOnlineSim(ref phoneNumber, ref phoneOrderId, providerName);
+
+            EnterPhoneSDA(phoneNumber);
+
+            ConfirmMobileSDA(windowMail, browser);
+
+            //TODO часто ни с чего вылезает генерал фаилюр, перезапускать наверное хз
+            CheckGeneralFailure(currentDirectory, screenScalingFactor, sdaProc, imageCount);
+
+            SkipEncryptSDA();
+
+            SkipWarningWindow();
+
+            string rCode = SaveRCodeFilteredWindow(currentDirectory, screenScalingFactor, imageCount).Result;
+            if (rCode == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("OCR can't recognize code");
+                Console.ResetColor();
+                Console.ReadLine();
+            }
+
+            string smsCode = ReturnSmsOnlineSim(phoneOrderId);
+        }
+
         static async Task<string> Captcha(int imageCount)
         {
             TwoCaptcha.TwoCaptcha solver = new TwoCaptcha.TwoCaptcha("d892c7eb922e9223f47e4575981752db");
@@ -1282,7 +1354,7 @@ namespace AutoSDA
                     Console.WriteLine($"Steam login is {loginSteam}");
                     Console.ResetColor();
 
-                   //CheckSteamNumberAvailable(ref balance, ref countProviderPhones, ref costProvider, providerName);
+                    //CheckSteamNumberAvailable(ref balance, ref countProviderPhones, ref costProvider, providerName);
 
                     Process process = new Process();
                     ProcessStartInfo processStartInfo = new ProcessStartInfo();
@@ -1308,13 +1380,13 @@ namespace AutoSDA
 
                     LoginSDA(loginSteam, password);
 
-                    bool isCodeNeeded = MailCodeNeeded(currentDirectory, screenScalingFactor,imageCount);
+                    bool isCodeNeeded = MailCodeNeeded(currentDirectory, screenScalingFactor, imageCount);
 
                     if (isCodeNeeded == true)
                     {
                         //иногда не нужен, есть акки которые пускают без кода
                         EnterMailCodeSDA(windowMail, browser);
-                    }                    
+                    }
 
                     //OrderPhone(ref phoneNumber, ref phoneOrderId, providerName);
                     OrderPhoneOnlineSim(ref phoneNumber, ref phoneOrderId, providerName);
@@ -1330,7 +1402,7 @@ namespace AutoSDA
 
                     SkipWarningWindow();
 
-                    string rCode = SaveRCodeFilteredWindow(currentDirectory, screenScalingFactor,  imageCount).Result;
+                    string rCode = SaveRCodeFilteredWindow(currentDirectory, screenScalingFactor, imageCount).Result;
                     if (rCode == null)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -1373,6 +1445,7 @@ namespace AutoSDA
                     browser.Quit();
                     imageCount += 1;
                     Thread.Sleep(10000);
+
                 }
             }
 
