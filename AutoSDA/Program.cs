@@ -808,7 +808,7 @@ namespace AutoSDA
             }
         }
 
-        static void OrderPhone(ref string phoneNumber, ref int phoneId, string provider)
+        static void OrderPhone5Sim(ref string phoneNumber, ref int phoneId, string provider)
         {
             try
             {
@@ -848,7 +848,7 @@ namespace AutoSDA
             }
         }
 
-        static string CheckSms(int phoneId)
+        static string ReturnSms5Sim(int phoneId)
         {
             try
             {
@@ -1341,9 +1341,8 @@ namespace AutoSDA
 
                     SetVariables(input,ref loginSteam, ref password, ref loginMailRu);
 
-                    // megafon
-                    // mts
-                    string providerName = "mts";
+                    
+                    string providerName = "megafon";
                     string phoneNumber = default;
                     int phoneOrderId = default;
                     double balance = default;
@@ -1355,7 +1354,7 @@ namespace AutoSDA
                     Console.ResetColor();
 
                     //CheckSteamNumberAvailable(ref balance, ref countProviderPhones, ref costProvider, providerName);
-
+                    
                     Process process = new Process();
                     ProcessStartInfo processStartInfo = new ProcessStartInfo();
                     processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
@@ -1388,7 +1387,7 @@ namespace AutoSDA
                         EnterMailCodeSDA(windowMail, browser);
                     }
 
-                    //OrderPhone(ref phoneNumber, ref phoneOrderId, providerName);
+                    //OrderPhone5Sim(ref phoneNumber, ref phoneOrderId, providerName);
                     OrderPhoneOnlineSim(ref phoneNumber, ref phoneOrderId, providerName);
 
                     EnterPhoneSDA(phoneNumber);
@@ -1412,7 +1411,7 @@ namespace AutoSDA
                     }
 
                     string smsCode = ReturnSmsOnlineSim(phoneOrderId);
-                    //string smsCode = CheckSms(phoneOrderId);
+                    //string smsCode = ReturnSms5Sim(phoneOrderId);
                     if (smsCode == null)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
